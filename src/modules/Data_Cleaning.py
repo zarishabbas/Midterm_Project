@@ -26,6 +26,21 @@ def cleaning(path):
     # Fill null values in 'arr_delay' by substracting 'crs_arr_time' from 'arr_time'
     df['arr_delay'] = df['arr_delay'].fillna(df['arr_time'] - df['crs_arr_time'])
     
+    # Combine same brand of manufactures
+    manufactures = {
+        'Embraer S A': 'Embraer',
+        'Embraer-empresa Brasileira De': 'Embraer',
+        'Mcdonnell Douglas Corporation': 'Mcdonnell Douglas',
+        'Mcdonnell Douglas Aircraft Co': 'Mcdonnell Douglas',
+        'Airbus Industrie': 'Airbus',
+        'Boeing Of Canada/dehav Div': 'Boeing',
+        'Saab-scania': 'Saab',
+        'Gulfstream Aerospace Corp': 'Gulfstream Aerospace',
+        'Bombardier Inc': 'Bombardier'
+    }
+
+    df['manufacturername'].replace(manufactures, inplace=True)
+    
     # One hot encode the 'manufacturername'
     enc = OneHotEncoder(sparse=False, handle_unknown='ignore')
     encoded = enc.fit_transform(df['manufacturername'].to_numpy().reshape(-1,1))
