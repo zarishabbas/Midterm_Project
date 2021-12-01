@@ -23,8 +23,12 @@ def cleaning(path):
     # Drop rows that contain null values in 'arr_time'
     df.dropna(subset=['arr_time'], inplace=True)
     
-    # Fill null values in 'arr_delay' by substracting 'crs_arr_time' from 'arr_time'
-    df['arr_delay'] = df['arr_delay'].fillna(df['arr_time'] - df['crs_arr_time'])
+    # Fill null values in 'arr_delay' by substracting 'crs_arr_time' from 'arr_time' 
+    # (condition applied to adjust for hhmm format and arrive in next day issue)
+    to_min = lambda x: x.astype(str).str[:-2].str.zfill(4).str[:2].astype(int) * 60 + x.astype(str).str[:-2].str.zfill(4).str[2:].astype(int)
+    df['arr_delay'] = df['arr_delay'].fillna(to_min(df['arr_time'])+24*60 - to_min(df['crs_arr_time'])\
+                                         if (df['arr_time'][0]<500 and df['crs_arr_time'][0]>2300) \
+                                         else (to_min(df['arr_time']) - to_min(df['crs_arr_time'])))
     
     # Combine same brand of manufactures
     manufactures = {
@@ -52,6 +56,9 @@ def cleaning(path):
     df['aircraft_age'] = df['aircraft_age'].fillna(int(df['aircraft_age'].mean()))
     df['aircraft_age'] = df['aircraft_age'].astype(int)
     
+    # Drop outliers of 'aircraft_age' caused by source aircraft data.
+    df = df[(df['aircraft_age'] >= 0) & (df['aircraft_age'] <= 100)]
+
     # Drop 'built'
     df.drop(['built'], axis=1, inplace=True)
     
