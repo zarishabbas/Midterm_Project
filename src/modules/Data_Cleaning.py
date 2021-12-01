@@ -56,6 +56,9 @@ def cleaning(path):
     df['aircraft_age'] = df['aircraft_age'].fillna(int(df['aircraft_age'].mean()))
     df['aircraft_age'] = df['aircraft_age'].astype(int)
     
+    # Drop outliers of 'aircraft_age' caused by source aircraft data.
+    df = df[(df['aircraft_age'] >= 0) & (df['aircraft_age'] <= 100)]
+
     # Drop 'built'
     df.drop(['built'], axis=1, inplace=True)
     
