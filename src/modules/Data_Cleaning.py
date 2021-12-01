@@ -25,10 +25,14 @@ def cleaning(path):
     
     # Fill null values in 'arr_delay' by substracting 'crs_arr_time' from 'arr_time' 
     # (condition applied to adjust for hhmm format and arrive in next day issue)
-    to_min = lambda x: x.astype(str).str[:-2].str.zfill(4).str[:2].astype(int) * 60 + x.astype(str).str[:-2].str.zfill(4).str[2:].astype(int)
-    df['arr_delay'] = df['arr_delay'].fillna(to_min(df['arr_time'])+24*60 - to_min(df['crs_arr_time'])\
-                                         if (df['arr_time'][0]<500 and df['crs_arr_time'][0]>2300) \
-                                         else (to_min(df['arr_time']) - to_min(df['crs_arr_time'])))
+    float_to_min = lambda x: x.astype(str).str[:-2].str.zfill(4).str[:2].astype(int) * 60 + x.astype(str).str[:-2].str.zfill(4).str[2:].astype(int)
+    int_to_min = lambda x: x.astype(str).str.zfill(4).str[:2].astype(int) * 60 + x.astype(str).str.zfill(4).str[2:].astype(int)
+
+    idx = df.loc[(df['arr_delay'].isna()) & (df['arr_time']<1000) & (df['crs_arr_time']>1800), 'arr_delay'].index
+    df.loc[(df['arr_delay'].isna()) & (df['arr_time']<1000) & (df['crs_arr_time']>1800), 'arr_delay'] = (float_to_min(df['arr_time'])+24*60\
+                                                                                                        - int_to_min(df['crs_arr_time']))[idx].values
+
+    df['arr_delay'] = df['arr_delay'].fillna(float_to_min(df['arr_time']) - int_to_min(df['crs_arr_time'])))
     
     # Combine same brand of manufactures
     manufactures = {
